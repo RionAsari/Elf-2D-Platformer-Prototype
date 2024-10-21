@@ -8,6 +8,7 @@ public class Arrow : MonoBehaviour
     private Collider2D arrowCollider; // Arrow's collider
     private float damage; // Damage dealt by the arrow
     public float chargeLevel; // Added for managing charge levels
+    public bool isSpecialArrow = false; // Flag to identify if the arrow is special
 
     private void Start()
     {
@@ -33,16 +34,24 @@ public class Arrow : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // If it collides with an enemy, apply damage
-        if (collision.gameObject.CompareTag("Enemy"))
+        // Check if it collides with an enemy
+        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("LightGrunt"))
         {
-            Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+            LightGrunt enemy = collision.gameObject.GetComponent<LightGrunt>();
             if (enemy != null)
             {
-                enemy.TakeDamage((int)damage); // Deal damage to enemy
-
-                // Handle hacking logic
-                enemy.HandleHacking(chargeLevel); // Pass charge level to enemy
+                if (isSpecialArrow)
+                {
+                    // Disable the enemy if it's a special arrow
+                    StartCoroutine(enemy.DisableEnemy(5f)); // Disable for 5 seconds
+                }
+                else
+                {
+                    // Calculate damage based on charge level for regular arrows
+                    int damageToDeal = CalculateDamage();
+                    damageToDeal = Mathf.Min(damageToDeal, Mathf.FloorToInt(enemy.maxHealth));
+                    enemy.TakeDamage(damageToDeal); // Call method to reduce health
+                }
             }
         }
 
@@ -50,12 +59,31 @@ public class Arrow : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // Calculate damage based on charge level
+    private int CalculateDamage()
+    {
+        if (chargeLevel >= 0.01f && chargeLevel < 0.5f) // 1%-49% charge
+        {
+            return 25;
+        }
+        else if (chargeLevel >= 0.5f && chargeLevel < 1f) // 50%-99% charge
+        {
+            return 50;
+        }
+        else if (chargeLevel >= 1f) // 100% charge
+        {
+            return 100;
+        }
+        return 0; // No damage if charge level is 0
+    }
+
     // Function to set the damage of the arrow
     public void SetDamage(float arrowDamage)
     {
-        damage = arrowDamage;
+        damage = arrowDamage; // Set damage value
     }
 
+    // Function to set the charge level of the arrow
     public void SetChargeLevel(float level)
     {
         chargeLevel = level; // Set charge level

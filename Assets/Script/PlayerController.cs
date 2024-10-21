@@ -212,6 +212,13 @@ public class PlayerController : MonoBehaviour
             jumpCount = 0; // Reset jump count
             animator.SetBool("isGrounded", true); // Update animator parameter
         }
+
+        // Handle collision with LightGrunt
+        if (collision.gameObject.CompareTag("LightGrunt"))
+        {
+            // Take damage from LightGrunt
+            TakeDamage(25);
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -286,20 +293,26 @@ public class PlayerController : MonoBehaviour
         return isInvincible;
     }
 
-    // Function to handle damage taken by the player
+    // Function to take damage
     public void TakeDamage(int damage)
     {
-        currentHealth -= damage;
-        if (currentHealth <= 0)
+        if (!isInvincible)
         {
-            Die();
+            currentHealth -= damage;
+            Debug.Log("Player Health: " + currentHealth);
+
+            // Check if the player is dead
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
         }
     }
 
     // Function to handle player death
     private void Die()
     {
-        // You can handle player death here (e.g., playing a death animation, restarting the level, etc.)
-        Debug.Log("Player died.");
+        Debug.Log("Player has died.");
+        // Implement death logic (e.g., respawn or game over)
     }
 }

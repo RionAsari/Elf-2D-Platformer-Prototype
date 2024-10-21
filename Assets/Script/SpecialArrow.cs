@@ -14,13 +14,13 @@ public class SpecialArrow : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // If it collides with an enemy
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (collision.gameObject.CompareTag("LightGrunt")) // Make sure to check for the correct tag
         {
-            Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+            LightGrunt enemy = collision.gameObject.GetComponent<LightGrunt>();
 
-            if (enemy != null && !enemy.isAlly) // Check if enemy is not an ally
+            if (enemy != null && !enemy.isAlly) // Check if the enemy is not an ally
             {
-                enemy.HandleHacking(0.5f); // Pass a generic charge level
+                // Disable the enemy immediately
                 StartCoroutine(DisableEnemy(enemy)); // Disable the enemy
             }
         }
@@ -30,13 +30,14 @@ public class SpecialArrow : MonoBehaviour
     }
 
     // Coroutine to disable the enemy
-    private IEnumerator DisableEnemy(Enemy enemy)
+    private IEnumerator DisableEnemy(LightGrunt enemy)
     {
         enemy.isHackable = true; // Set enemy to hackable
-        yield return enemy.DisableEnemy(); // Call DisableEnemy in the Enemy script
 
-        yield return new WaitForSeconds(disableDuration); // Wait for disable duration
+        // Call DisableEnemy with the specified duration
+        yield return StartCoroutine(enemy.DisableEnemy(disableDuration)); // Pass the disable duration
 
+        // After the disable duration, check if the enemy is still not an ally
         if (!enemy.isAlly) // If the enemy is not hacked yet
         {
             enemy.isHackable = false; // Set to not hackable
@@ -57,8 +58,7 @@ public class SpecialArrow : MonoBehaviour
         Destroy(GetComponent<Rigidbody2D>()); // Remove the rigidbody
 
         // Call DestroyArrow after a delay that matches your hit animation length
-        // Adjust the delay as necessary based on your animation timing
-        Invoke("DestroyArrow", 0.2f); // Example delay
+        Invoke("DestroyArrow", 0.2f); // Example delay, adjust as needed
     }
 
     // Call this function at the end of the Hit animation to destroy the arrow
